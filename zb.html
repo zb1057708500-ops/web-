@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>优惠管理</title>
+  <!-- 引入Vue2 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+  <!-- 引入ElementUI CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/theme-chalk/index.css">
+  <!-- 引入ElementUI JS -->
+  <script src="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/index.js"></script>
+</head>
+<body>
+<div id="app">
+  <el-container style="height: 100vh; border: 0; margin:0;">
+    <!-- 左侧侧边栏 -->
+    <el-aside width="240px" style="background-color:#192135;">
+      <div style="color:#fff;padding:24px 20px;font-size:26px;font-weight:bold;">Runnar</div>
+      <el-menu
+        default-active="coupon"
+        background-color="#192135"
+        text-color="#ffffff"
+        active-text-color="#409EFF"
+      >
+        <el-menu-item index="home">
+          <i class="el-icon-s-home"></i>
+          <span>欢迎控制页</span>
+        </el-menu-item>
+
+        <el-submenu index="race">
+          <template slot="title">
+            <i class="el-icon-s-order"></i>
+            <span>赛事管理</span>
+          </template>
+        </el-submenu>
+
+        <el-submenu index="serviceGroup">
+          <template slot="title">
+            <i class="el-icon-s-data"></i>
+            <span>赛事服务组合管理</span>
+          </template>
+        </el-submenu>
+
+        <el-submenu index="goods">
+          <template slot="title">
+            <i class="el-icon-goods"></i>
+            <span>商品库管理</span>
+          </template>
+        </el-submenu>
+
+        <el-submenu index="order">
+          <template slot="title">
+            <i class="el-icon-s-ticket"></i>
+            <span>订单管理</span>
+          </template>
+        </el-submenu>
+
+        <el-submenu index="score">
+          <template slot="title">
+            <i class="el-icon-s-marketing"></i>
+            <span>成绩管理</span>
+          </template>
+        </el-submenu>
+
+        <el-submenu index="market">
+          <template slot="title">
+            <i class="el-icon-s-promotion"></i>
+            <span>营销推广中心</span>
+          </template>
+          <el-menu-item index="channel">渠道管理</el-menu-item>
+          <el-menu-item index="coupon">优惠管理</el-menu-item>
+          <el-menu-item index="redPacket">赛事红包管理</el-menu-item>
+          <el-menu-item index="poster">海报管理</el-menu-item>
+        </el-submenu>
+      </el-menu>
+    </el-aside>
+
+    <el-container>
+      <!-- 顶部头部 -->
+      <el-header style="background:#fff;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;">
+        <el-input placeholder="搜索..." prefix-icon="el-icon-search" style="width:260px;"></el-input>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span>Hi,Emily</span>
+          <el-avatar size="40" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a75346e41c_fake.jpeg"></el-avatar>
+        </div>
+      </el-header>
+
+      <!-- 主内容区域 -->
+      <el-main style="background:#f5f7fa;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2 style="margin:0; font-size:22px;">优惠管理</h2>
+          <span>This Week, 14-21 Oct</span>
+        </div>
+
+        <!-- 筛选与按钮行 -->
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+          <el-button type="danger" icon="el-icon-plus">发布优惠券</el-button>
+          <el-select v-model="filterStatus" placeholder="优惠券状态">
+            <el-option label="全部" value=""></el-option>
+          </el-select>
+          <el-select v-model="filterType" placeholder="优惠券类型">
+            <el-option label="全部" value=""></el-option>
+          </el-select>
+          <el-select v-model="filterName" placeholder="优惠券名称">
+            <el-option label="全部" value=""></el-option>
+          </el-select>
+        </div>
+
+        <!-- 优惠券表格 -->
+        <el-table
+          :data="tableData"
+          border
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column type="selection"></el-table-column>
+          <el-table-column prop="couponType" label="优惠券类型"></el-table-column>
+          <el-table-column prop="couponName" label="优惠券名称"></el-table-column>
+          <el-table-column prop="price" label="面值"></el-table-column>
+          <el-table-column prop="createTime" label="创建时间"></el-table-column>
+          <el-table-column prop="validTime" label="有效时间"></el-table-column>
+          <el-table-column prop="totalCount" label="发放总数"></el-table-column>
+          <el-table-column prop="getCount" label="已领取"></el-table-column>
+          <el-table-column prop="usedCount" label="已使用"></el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <el-button type="text">领取详情</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <!-- 分页组件 -->
+        <el-pagination
+          style="margin-top:16px;text-align:right;"
+          @current-change="handleCurrentChange"
+          :current-page="currentPage"
+          :page-size="pageSize"
+          layout="prev, pager, next, total"
+          :total="total"
+        ></el-pagination>
+      </el-main>
+    </el-container>
+  </el-container>
+</div>
+
+<script>
+new Vue({
+  el: '#app',
+  data() {
+    return {
+      filterStatus: "",
+      filterType: "",
+      filterName: "",
+      currentPage: 1,
+      pageSize: 4,
+      total: 20,
+      tableData: [
+        {
+          couponType: "服务优惠券",
+          couponName: "服务券",
+          price: 50,
+          createTime: "2018-03-23 18:06:09",
+          validTime: "2018-03-23至2018-03-24",
+          totalCount: 100,
+          getCount: 10,
+          usedCount: 0
+        },
+        {
+          couponType: "赛事优惠券",
+          couponName: "服务券",
+          price: 50,
+          createTime: "2018-03-23 18:06:09",
+          validTime: "2018-03-23至2018-03-24",
+          totalCount: 100,
+          getCount: 55,
+          usedCount: 0
+        },
+        {
+          couponType: "服务优惠券",
+          couponName: "服务券",
+          price: 50,
+          createTime: "2018-03-23 18:06:09",
+          validTime: "2018-03-23至2018-03-24",
+          totalCount: 100,
+          getCount: 68,
+          usedCount: 0
+        },
+        {
+          couponType: "赛事优惠券",
+          couponName: "服务券",
+          price: 50,
+          createTime: "2018-03-23 18:06:09",
+          validTime: "2018-03-23至2018-03-24",
+          totalCount: 100,
+          getCount: 33,
+          usedCount: 0
+        }
+      ]
+    }
+  },
+  methods: {
+    handleSelectionChange(rows) {
+      console.log("选中行：", rows);
+    },
+    handleCurrentChange(page) {
+      this.currentPage = page;
+    }
+  }
+})
+</script>
+</body>
+</html>
